@@ -1,0 +1,30 @@
+<div class="chat-container">
+    <div class="chat-header">
+      <h2>College Assistant Chatbot</h2>
+      <p>Ask me anything about navigating the education system</p>
+    </div>
+  
+    <div class="messages-container">
+      <div *ngFor="let message of messages" 
+           [class]="message.isUser ? 'message user-message' : 'message bot-message'">
+        <div class="message-content">{{ message.text }}</div>
+      </div>
+      
+      <div *ngIf="isLoading" class="message bot-message">
+        <div class="message-content typing">Thinking...</div>
+      </div>
+    </div>
+  
+    <div class="input-container">
+      <input 
+        type="text" 
+        [(ngModel)]="userInput"
+        (keyup.enter)="sendMessage()"
+        placeholder="Type your message..."
+        [disabled]="isLoading"
+      />
+      <button (click)="sendMessage()" [disabled]="isLoading || !userInput.trim()">
+        Send
+      </button>
+    </div>
+  </div>
