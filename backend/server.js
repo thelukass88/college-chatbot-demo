@@ -29,60 +29,87 @@ function isDataQuery(message) {
 }
 
 // Helper function to build context for Claude based on query
+// Helper function to build context for Claude based on query
 function buildDataContext(message) {
   const lowerMessage = message.toLowerCase();
-  let context = `You are analyzing student performance data from interim reports. Here's the context:
+  let context = `You are a data analysis assistant helping a sixth form college teacher analyze their students' performance.
 
-**Scoring System:**
-- Independence (I), Deadlines (D), Class Ethic (CE): Scored 1-4 (4 is best)
-- Key Assessment (KA): Graded A-E (A is best)
-- Each student takes 3 classes
-- There are 5 interim reports (IRs) per academic year
+**IMPORTANT CONTEXT:**
+- The teacher is asking about THEIR class of 15 students (IDs: 1001-1015)
+- When they say "my students", "my class", or just ask about students generally, they mean these 15 students
+- Each student takes 3 different classes/subjects
+- There are 5 Interim Reports (IRs) per academic year (IR1 through IR5)
 
-**Your Role:** You're helping a teacher analyze their students' performance.
+**SCORING SYSTEM:**
+- I = Independence (1-4, where 4 is excellent, 1 is poor)
+- D = Deadlines (1-4, where 4 is excellent, 1 is poor)  
+- CE = Class Ethic (1-4, where 4 is excellent, 1 is poor)
+- KA = Key Assessment Grade (A is best, E is worst)
+
+**CLASS CODES FORMAT:**
+- Format: U-XXX-#Y or L-XXX-#Y
+- U = Upper level, L = Lower level
+- XXX = Subject abbreviation (e.g., MAT=Maths, ENG=English, BIO=Biology)
+- # = Number, Y = Letter identifier
+
+**HOW TO RESPOND:**
+1. Be concise - 3-5 sentences maximum unless asked for details
+2. Lead with the key finding first
+3. Use bullet points ONLY for listing student IDs or specific data points
+4. Use clear headings (##) if covering multiple topics
+5. Always refer to students by their ID number
+6. Focus on actionable insights, not just data description
+7. When showing trends, mention specific numbers (e.g., "improved from 2.5 to 3.2")
+
+**FORMATTING EXAMPLE:**
+"Based on the latest interim report, 3 students are struggling: Students 1003, 1007, and 1012 with averages below 2.5. Student 1003 needs the most support with an average of 1.8 across Independence, Deadlines, and Class Ethic."
 
 `;
 
   let data = {};
 
   // Determine what data to fetch based on the question
-  if (lowerMessage.includes('improving') || lowerMessage.includes('progress')) {
+  if (lowerMessage.includes('improving') || lowerMessage.includes('progress') || lowerMessage.includes('trend')) {
     const trends = dataService.getImprovementTrends();
     data.trends = trends;
-    context += `**Student Improvement Trends:**\n${JSON.stringify(trends, null, 2)}\n\n`;
+    context += `\n**IMPROVEMENT TRENDS DATA:**\n${JSON.stringify(trends, null, 2)}\n`;
   }
 
-  if (lowerMessage.includes('struggling') || lowerMessage.includes('worst') || lowerMessage.includes('concern')) {
+  if (lowerMessage.includes('struggling') || lowerMessage.includes('worst') || lowerMessage.includes('concern') || lowerMessage.includes('low') || lowerMessage.includes('help')) {
     const struggling = dataService.getStrugglingStudents();
     data.struggling = struggling;
-    context += `**Struggling Students (Latest IR):**\n${JSON.stringify(struggling, null, 2)}\n\n`;
+    context += `\n**STRUGGLING STUDENTS (IR5 - Latest):**\n${JSON.stringify(struggling, null, 2)}\n`;
   }
 
-  if (lowerMessage.includes('best') || lowerMessage.includes('top') || lowerMessage.includes('achieving')) {
+  if (lowerMessage.includes('best') || lowerMessage.includes('top') || lowerMessage.includes('achieving') || lowerMessage.includes('high')) {
     const topPerformers = dataService.getTopPerformers();
     data.topPerformers = topPerformers;
-    context += `**Top Performers (Latest IR):**\n${JSON.stringify(topPerformers, null, 2)}\n\n`;
+    context += `\n**TOP PERFORMERS (IR5 - Latest):**\n${JSON.stringify(topPerformers, null, 2)}\n`;
   }
 
-  if (lowerMessage.includes('effort') && (lowerMessage.includes('grade') || lowerMessage.includes('reflect'))) {
+  if (lowerMessage.includes('effort') || lowerMessage.includes('trying')) {
     const highEffort = dataService.getHighEffortLowGrades();
     data.highEffort = highEffort;
-    context += `**High Effort, Lower Grades:**\n${JSON.stringify(highEffort, null, 2)}\n\n`;
+    context += `\n**HIGH EFFORT BUT LOWER GRADES:**\n${JSON.stringify(highEffort, null, 2)}\n`;
   }
 
-  // If no specific query matched, provide overview
-  if (Object.keys(data).length === 0) {
+  // If asking about "class" or "students" in general, provide overview
+  if ((lowerMessage.includes('class') || lowerMessage.includes('students') || lowerMessage.includes('overview')) 
+      && Object.keys(data).length === 0) {
     const trends = dataService.getImprovementTrends();
-    const struggling = dataService.getStrugglingStudents();
-    const topPerformers = dataService.getTopPerformers(3);
+    const improving = trends.filter(t => t.trend === 'improving').length;
+    const declining = trends.filter(t => t.trend === 'declining').length;
+    const stable = trends.filter(t => t.trend === 'stable').length;
     
-    context += `**Overview Data:**\n`;
-    context += `Improvement Trends: ${JSON.stringify(trends, null, 2)}\n`;
-    context += `Struggling Students: ${JSON.stringify(struggling, null, 2)}\n`;
-    context += `Top Performers: ${JSON.stringify(topPerformers, null, 2)}\n\n`;
+    context += `\n**CLASS OVERVIEW:**\n`;
+    context += `Total students: 15\n`;
+    context += `Improving: ${improving} students\n`;
+    context += `Stable: ${stable} students\n`;
+    context += `Declining: ${declining} students\n\n`;
+    context += `Full trend data: ${JSON.stringify(trends, null, 2)}\n`;
   }
 
-  context += `**Instructions:** Analyze this data and provide clear, actionable insights. Focus on specific student IDs and concrete numbers. Be concise but thorough.`;
+  context += `\nRemember: Be concise, specific, and actionable. The teacher wants quick insights, not lengthy explanations.`;
 
   return context;
 }
