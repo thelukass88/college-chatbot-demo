@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "start_date": "2024-09-01",
+    "end_date": "2024-10-15",
+    "IR_name": "Interim Report 1 - Autumn Term Start",
+    "active": false
+  },
+  {
+    "id": 2,
+    "start_date": "2024-10-16",
+    "end_date": "2024-12-15",
+    "IR_name": "Interim Report 2 - Pre-Christmas",
+    "active": false
+  },
+  {
+    "id": 3,
+    "start_date": "2025-01-06",
+    "end_date": "2025-02-14",
+    "IR_name": "Interim Report 3 - Spring Term",
+    "active": false
+  },
+  {
+    "id": 4,
+    "start_date": "2025-02-24",
+    "end_date": "2025-04-04",
+    "IR_name": "Interim Report 4 - Easter Term",
+    "active": false
+  },
+  {
+    "id": 5,
+    "start_date": "2025-04-21",
+    "end_date": "2025-06-20",
+    "IR_name": "Interim Report 5 - Summer Term",
+    "active": true
+  }
+]
