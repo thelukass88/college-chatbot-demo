@@ -30,6 +30,7 @@ function isDataQuery(message) {
 
 // Helper function to build context for Claude based on query
 // Helper function to build context for Claude based on query
+// Helper function to build context for Claude based on query
 function buildDataContext(message) {
   const lowerMessage = message.toLowerCase();
   let context = `You are a data analysis assistant helping a sixth form college teacher analyze their students' performance.
@@ -40,11 +41,13 @@ function buildDataContext(message) {
 - Each student takes 3 different classes/subjects
 - There are 5 Interim Reports (IRs) per academic year (IR1 through IR5)
 
-**SCORING SYSTEM:**
+**SCORING SYSTEM - YOU HAVE ACCESS TO ALL OF THESE:**
 - I = Independence (1-4, where 4 is excellent, 1 is poor)
 - D = Deadlines (1-4, where 4 is excellent, 1 is poor)  
 - CE = Class Ethic (1-4, where 4 is excellent, 1 is poor)
-- KA = Key Assessment Grade (A is best, E is worst)
+- KA = Key Assessment Grade (A, B, C, D, or E - where A is best, E is worst)
+  * IMPORTANT: Every student entry includes a KA grade - this is their actual academic performance grade
+  * The "grades" field in the data shows the KA values for each class
 
 **CLASS CODES FORMAT:**
 - Format: U-XXX-#Y or L-XXX-#Y
@@ -60,9 +63,10 @@ function buildDataContext(message) {
 5. Always refer to students by their ID number
 6. Focus on actionable insights, not just data description
 7. When showing trends, mention specific numbers (e.g., "improved from 2.5 to 3.2")
+8. When discussing grades, reference the KA (Key Assessment) grades which are A-E
 
 **FORMATTING EXAMPLE:**
-"Based on the latest interim report, 3 students are struggling: Students 1003, 1007, and 1012 with averages below 2.5. Student 1003 needs the most support with an average of 1.8 across Independence, Deadlines, and Class Ethic."
+"Based on the latest interim report, 3 students are struggling: Students 1003, 1007, and 1012 with averages below 2.5. Student 1003 needs the most support with an average of 1.8 across Independence, Deadlines, and Class Ethic, with grades of D, E, and D."
 
 `;
 
@@ -72,25 +76,44 @@ function buildDataContext(message) {
   if (lowerMessage.includes('improving') || lowerMessage.includes('progress') || lowerMessage.includes('trend')) {
     const trends = dataService.getImprovementTrends();
     data.trends = trends;
-    context += `\n**IMPROVEMENT TRENDS DATA:**\n${JSON.stringify(trends, null, 2)}\n`;
+    context += `\n**IMPROVEMENT TRENDS DATA:**\n`;
+    context += `Note: This shows average effort scores (I+D+CE)/3 across IRs. To see actual grades, check the struggling/top performers data.\n`;
+    context += `${JSON.stringify(trends, null, 2)}\n`;
   }
 
   if (lowerMessage.includes('struggling') || lowerMessage.includes('worst') || lowerMessage.includes('concern') || lowerMessage.includes('low') || lowerMessage.includes('help')) {
     const struggling = dataService.getStrugglingStudents();
     data.struggling = struggling;
-    context += `\n**STRUGGLING STUDENTS (IR5 - Latest):**\n${JSON.stringify(struggling, null, 2)}\n`;
+    context += `\n**STRUGGLING STUDENTS (IR5 - Latest):**\n`;
+    context += `Note: 'grades' field shows KA (Key Assessment) grades for each of their 3 classes.\n`;
+    context += `${JSON.stringify(struggling, null, 2)}\n`;
   }
 
   if (lowerMessage.includes('best') || lowerMessage.includes('top') || lowerMessage.includes('achieving') || lowerMessage.includes('high')) {
     const topPerformers = dataService.getTopPerformers();
     data.topPerformers = topPerformers;
-    context += `\n**TOP PERFORMERS (IR5 - Latest):**\n${JSON.stringify(topPerformers, null, 2)}\n`;
+    context += `\n**TOP PERFORMERS (IR5 - Latest):**\n`;
+    context += `Note: 'grades' field shows KA (Key Assessment) grades for each of their 3 classes.\n`;
+    context += `${JSON.stringify(topPerformers, null, 2)}\n`;
   }
 
   if (lowerMessage.includes('effort') || lowerMessage.includes('trying')) {
     const highEffort = dataService.getHighEffortLowGrades();
     data.highEffort = highEffort;
-    context += `\n**HIGH EFFORT BUT LOWER GRADES:**\n${JSON.stringify(highEffort, null, 2)}\n`;
+    context += `\n**HIGH EFFORT BUT LOWER GRADES:**\n`;
+    context += `Note: 'grades' field shows KA (Key Assessment) grades. These students have high effort scores (I, D, CE) but their KA grades are C, D, or E.\n`;
+    context += `${JSON.stringify(highEffort, null, 2)}\n`;
+  }
+
+  // Check if asking about grades specifically
+  if (lowerMessage.includes('grade') || lowerMessage.includes('assessment') || lowerMessage.includes('ka')) {
+    // Make sure we have grade data
+    if (!data.struggling && !data.topPerformers) {
+      const allStudents = dataService.getTopPerformers(15); // Get all for grade analysis
+      context += `\n**ALL STUDENT GRADES (IR5 - Latest):**\n`;
+      context += `Each student has 3 KA grades (one per class). The 'grades' array shows these.\n`;
+      context += `${JSON.stringify(allStudents, null, 2)}\n`;
+    }
   }
 
   // If asking about "class" or "students" in general, provide overview
@@ -101,15 +124,23 @@ function buildDataContext(message) {
     const declining = trends.filter(t => t.trend === 'declining').length;
     const stable = trends.filter(t => t.trend === 'stable').length;
     
+    const topPerformers = dataService.getTopPerformers(3);
+    const struggling = dataService.getStrugglingStudents();
+    
     context += `\n**CLASS OVERVIEW:**\n`;
     context += `Total students: 15\n`;
     context += `Improving: ${improving} students\n`;
     context += `Stable: ${stable} students\n`;
     context += `Declining: ${declining} students\n\n`;
-    context += `Full trend data: ${JSON.stringify(trends, null, 2)}\n`;
+    context += `Top 3 performers with their KA grades:\n${JSON.stringify(topPerformers, null, 2)}\n\n`;
+    context += `Struggling students with their KA grades:\n${JSON.stringify(struggling, null, 2)}\n`;
   }
 
-  context += `\nRemember: Be concise, specific, and actionable. The teacher wants quick insights, not lengthy explanations.`;
+  context += `\nRemember: 
+- Be concise, specific, and actionable
+- You HAVE access to KA grades in the 'grades' field of the data
+- When discussing student performance, reference both effort scores (I, D, CE) AND their KA grades
+- The teacher wants quick insights, not lengthy explanations`;
 
   return context;
 }
