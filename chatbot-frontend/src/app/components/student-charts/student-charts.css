@@ -1,0 +1,24 @@
+.charts-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .charts-container h2 {
+    color: #2d3748;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  
+  .chart-wrapper {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 400px;
+  }
+  
+  .chart-wrapper canvas {
+    max-height: 100%;
+  }

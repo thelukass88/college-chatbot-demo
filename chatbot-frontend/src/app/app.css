@@ -1,4 +1,38 @@
-:host {
+.app-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .app-nav {
+    background: #2d3748;
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .app-nav button {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: #cbd5e0;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+  
+  .app-nav button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .app-nav button.active {
+    background: #4299e1;
+    color: white;
+  }
+  
+  :host {
     display: block;
     height: 100vh;
     margin: 0;

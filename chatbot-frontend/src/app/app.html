@@ -1,1 +1,17 @@
-<app-chat></app-chat>
+<app-chat></app-chat><div class="app-container">
+  <nav class="app-nav">
+    <button 
+      [class.active]="currentView === 'chat'" 
+      (click)="currentView = 'chat'">
+      💬 Chat
+    </button>
+    <button 
+      [class.active]="currentView === 'charts'" 
+      (click)="currentView = 'charts'">
+      📊 Analytics
+    </button>
+  </nav>
+
+  <app-chat *ngIf="currentView === 'chat'"></app-chat>
+  <app-student-charts *ngIf="currentView === 'charts'"></app-student-charts>
+</div>
