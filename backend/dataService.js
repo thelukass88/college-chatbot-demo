@@ -177,35 +177,60 @@ class DataService {
   }
 
   // Check if students are improving
+  // Check if students are improving - WITH FULL DETAILS
   getImprovementTrends() {
     const students = [...new Set(studentReports.map(r => r.student_id))];
     
     const trends = students.map(studentId => {
+      const studentData = studentReports.filter(r => r.student_id === studentId);
       const byIR = {};
       
-      studentReports
-        .filter(r => r.student_id === studentId)
-        .forEach(entry => {
-          if (!byIR[entry.IR]) {
-            byIR[entry.IR] = [];
-          }
-          byIR[entry.IR].push((entry.I + entry.D + entry.CE) / 3);
-        });
+      studentData.forEach(entry => {
+        if (!byIR[entry.IR]) {
+          byIR[entry.IR] = {
+            entries: [],
+            scores: [],
+            grades: []
+          };
+        }
+        byIR[entry.IR].entries.push(entry);
+        byIR[entry.IR].scores.push((entry.I + entry.D + entry.CE) / 3);
+        byIR[entry.IR].grades.push(entry.KA);
+      });
 
       const irAverages = Object.keys(byIR)
         .sort()
-        .map(ir => ({
-          ir: parseInt(ir),
-          avg: (byIR[ir].reduce((a, b) => a + b, 0) / byIR[ir].length).toFixed(2)
-        }));
+        .map(ir => {
+          const irNum = parseInt(ir);
+          const scores = byIR[ir].scores;
+          const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2);
+          
+          // Calculate individual component averages
+          const entries = byIR[ir].entries;
+          const avgI = (entries.reduce((sum, e) => sum + e.I, 0) / entries.length).toFixed(2);
+          const avgD = (entries.reduce((sum, e) => sum + e.D, 0) / entries.length).toFixed(2);
+          const avgCE = (entries.reduce((sum, e) => sum + e.CE, 0) / entries.length).toFixed(2);
+          
+          return {
+            ir: irNum,
+            overall_avg: avg,
+            independence_avg: avgI,
+            deadlines_avg: avgD,
+            class_ethic_avg: avgCE,
+            grades: byIR[ir].grades,
+            class_count: entries.length
+          };
+        });
 
       // Calculate trend
       let improving = false;
       let declining = false;
+      let changeAmount = 0;
       
       if (irAverages.length >= 2) {
-        const firstAvg = parseFloat(irAverages[0].avg);
-        const lastAvg = parseFloat(irAverages[irAverages.length - 1].avg);
+        const firstAvg = parseFloat(irAverages[0].overall_avg);
+        const lastAvg = parseFloat(irAverages[irAverages.length - 1].overall_avg);
+        changeAmount = (lastAvg - firstAvg).toFixed(2);
         
         if (lastAvg > firstAvg + 0.3) improving = true;
         if (lastAvg < firstAvg - 0.3) declining = true;
@@ -213,8 +238,11 @@ class DataService {
 
       return {
         student_id: studentId,
-        ir_averages: irAverages,
-        trend: improving ? 'improving' : declining ? 'declining' : 'stable'
+        ir_details: irAverages,
+        trend: improving ? 'improving' : declining ? 'declining' : 'stable',
+        change_amount: changeAmount,
+        starting_avg: irAverages[0]?.overall_avg || 'N/A',
+        current_avg: irAverages[irAverages.length - 1]?.overall_avg || 'N/A'
       };
     });
 
