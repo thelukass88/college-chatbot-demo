@@ -184,7 +184,7 @@ app.post('/api/chat', async (req, res) => {
             absChange: Math.abs(parseFloat(t.change_amount))
           }))
           .sort((a, b) => b.absChange - a.absChange)
-          .slice(0, 5);
+          .slice(0, 15);
         
         chartData = {
           type: 'line',
@@ -216,8 +216,10 @@ app.post('/api/chat', async (req, res) => {
         // Count grade distribution
         const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
         allStudents.forEach(student => {
-          student.grades.forEach((grade: string) => {
-            gradeCount[grade as keyof typeof gradeCount]++;
+          student.grades.forEach((grade) => {
+            if (gradeCount[grade] !== undefined) {
+              gradeCount[grade]++;
+            }
           });
         });
         
