@@ -189,3 +189,12 @@
     background: #cbd5e0;
     cursor: not-allowed;
   }
+
+  .bot-message .message-content {
+    max-width: 85%;
+  }
+  
+  .bot-message app-chat-chart {
+    display: block;
+    margin-top: 10px;
+  }

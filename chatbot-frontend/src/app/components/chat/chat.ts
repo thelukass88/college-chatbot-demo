@@ -2,17 +2,19 @@ import { Component, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chat } from '../../services/chat.service';
+import { ChatChartComponent } from '../chat-chart/chat-chart';
 
 interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  chartData?: any;
 }
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ChatChartComponent],
   templateUrl: './chat.html',
   styleUrl: './chat.css'
 })
@@ -59,7 +61,8 @@ export class ChatComponent implements AfterViewChecked {
         this.messages.push({
           text: response.reply,
           isUser: false,
-          timestamp: new Date()
+          timestamp: new Date(),
+          chartData: response.chartData || null
         });
         this.isLoading = false;
         this.shouldScroll = true;
