@@ -2,8 +2,7 @@ import { Component, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chat } from '../../services/chat.service';
-import { ChatChartComponent } from '../chat-chart/chat-chart';
-
+import { ChatChartComponent } from '../chat-chart';
 interface Message {
   text: string;
   isUser: boolean;
