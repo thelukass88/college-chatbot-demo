@@ -153,12 +153,83 @@ app.post('/api/chat', async (req, res) => {
 
     let systemPrompt = '';
     let userMessage = message;
+    let chartData = null;
 
     // Check if this is a data-related query
     if (isDataQuery(message)) {
       console.log('Data query detected - building context...');
       systemPrompt = buildDataContext(message);
       console.log('Context built, querying Claude...');
+    }
+
+    // Detect if user wants a chart/visualization
+    const lowerMessage = message.toLowerCase();
+    const wantsChart = lowerMessage.includes('chart') || 
+                       lowerMessage.includes('graph') || 
+                       lowerMessage.includes('visualize') ||
+                       lowerMessage.includes('show me') ||
+                       lowerMessage.includes('plot');
+
+    if (wantsChart && isDataQuery(message)) {
+      console.log('Chart requested - preparing chart data...');
+      
+      // Determine what type of chart
+      if (lowerMessage.includes('progress') || lowerMessage.includes('trend') || lowerMessage.includes('improving')) {
+        const trends = dataService.getImprovementTrends();
+        
+        // Get top 5 students with most significant trends (improving or declining)
+        const sortedByChange = trends
+          .map(t => ({
+            ...t,
+            absChange: Math.abs(parseFloat(t.change_amount))
+          }))
+          .sort((a, b) => b.absChange - a.absChange)
+          .slice(0, 5);
+        
+        chartData = {
+          type: 'line',
+          title: 'Student Progress Over Time',
+          students: sortedByChange.map(student => ({
+            student_id: student.student_id,
+            trend: student.trend,
+            data: student.ir_details.map(ir => ({
+              ir: ir.ir,
+              score: parseFloat(ir.overall_avg)
+            }))
+          }))
+        };
+      } else if (lowerMessage.includes('performance') || lowerMessage.includes('current') || lowerMessage.includes('latest')) {
+        const topPerformers = dataService.getTopPerformers(15);
+        
+        chartData = {
+          type: 'bar',
+          title: 'Current Student Performance (Latest IR)',
+          students: topPerformers.map(student => ({
+            student_id: student.student_id,
+            score: parseFloat(student.average_score),
+            grades: student.grades
+          }))
+        };
+      } else if (lowerMessage.includes('grade') || lowerMessage.includes('assessment')) {
+        const allStudents = dataService.getTopPerformers(15);
+        
+        // Count grade distribution
+        const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+        allStudents.forEach(student => {
+          student.grades.forEach((grade: string) => {
+            gradeCount[grade as keyof typeof gradeCount]++;
+          });
+        });
+        
+        chartData = {
+          type: 'pie',
+          title: 'Grade Distribution (All Classes, Latest IR)',
+          data: Object.entries(gradeCount).map(([grade, count]) => ({
+            grade,
+            count
+          }))
+        };
+      }
     }
 
     console.log('Calling Anthropic API...');
@@ -188,6 +259,7 @@ app.post('/api/chat', async (req, res) => {
     
     res.json({
       reply: response.content[0].text,
+      chartData: chartData  // Include chart data if available
     });
   } catch (error) {
     console.error('Error:', error);
