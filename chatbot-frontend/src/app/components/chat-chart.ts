@@ -87,7 +87,7 @@ export class ChatChartComponent implements AfterViewInit {
         scales: {
           y: {
             beginAtZero: true,
-            max: 4,
+            max: 4.5,
             title: {
               display: true,
               text: 'Average Score',
@@ -132,7 +132,7 @@ export class ChatChartComponent implements AfterViewInit {
         scales: {
           y: {
             beginAtZero: true,
-            max: 4,
+            max: 4.5,
             title: {
               display: true,
               text: 'Score',
