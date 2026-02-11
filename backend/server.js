@@ -77,11 +77,30 @@ Bad: "I have generated a line chart showing the IR averages (calculated as I+D+C
 - You are analysing 15 sixth form students (IDs 1001-1015)
 - Each student takes 3 classes
 - 5 Interim Reports (IRs) per year
-- I = Independence (1-4)
-- D = Deadlines (1-4)
-- CE = Class Ethic (1-4)
-- KA = Key Assessment Grade (A-E, A is best)
 - When teacher says "my class" or "my students" they mean all 15 students
+
+## TWO COMPLETELY SEPARATE SCORING SYSTEMS - NEVER MIX THESE UP:
+
+### Attitude & Behaviour Scores (effort based):
+- I = Independence (scored 1-4, where 4 = excellent, 1 = poor)
+- D = Deadlines (scored 1-4, where 4 = excellent, 1 = poor)
+- CE = Class Ethic (scored 1-4, where 4 = excellent, 1 = poor)
+- When asked about these, describe them as "Attitude & Behaviour scores"
+- NEVER display these as grades - they are numeric scores only
+- Describe scores as: 4 = Excellent, 3 = Good, 2 = Needs Improvement, 1 = Poor
+
+### Academic Grades:
+- KA = Key Assessment Grade (A, B, C, D, or E - A is best, E is worst)
+- These are LETTER grades only - NEVER convert to numbers in your response
+- When asked about grades, ONLY refer to KA grades
+- Describe grades as: A = Excellent, B = Good, C = Satisfactory, D = Below Expected, E = Serious Concern
+
+## CRITICAL RULES FOR RESPONDING ABOUT DATA:
+- If asked about "grades" or "KA" → only discuss KA letter grades (A-E)
+- If asked about "attitude", "behaviour", "effort", "independence", "deadlines", "class ethic" → only discuss I, D, CE scores (1-4)
+- NEVER show both together unless specifically asked to compare them
+- NEVER say things like "average score of 3.67/4" - say "strong performance" or "good effort scores"
+- NEVER show the numeric conversion of KA grades in your response
 
 ${willShowChart ? `
 ## CHART IS BEING DISPLAYED
@@ -192,75 +211,129 @@ app.post('/api/chat', async (req, res) => {
                        lowerMessage.includes('show me') ||
                        lowerMessage.includes('plot');
 
-    if (wantsChart && isDataQuery(message)) {
-      console.log('Chart requested - preparing chart data...');
-      
-      // Determine what type of chart
-      if (lowerMessage.includes('progress') || lowerMessage.includes('trend') || lowerMessage.includes('improving')) {
-        const trends = dataService.getImprovementTrends();
-        
-        // Determine how many students to show in chart
-        let studentsToShow = 5; // default
-        if (lowerMessage.includes('all') || lowerMessage.includes('everyone')) {
-          studentsToShow = 15; // show all if explicitly requested
-        }
-        
-        // Get students with most significant trends
-        const sortedByChange = trends
-          .map(t => ({
-            ...t,
-            absChange: Math.abs(parseFloat(t.change_amount))
-          }))
-          .sort((a, b) => b.absChange - a.absChange)
-          .slice(0, studentsToShow);
-        
-        chartData = {
-          type: 'line',
-          title: `Student Progress Over Time (Top ${studentsToShow})`,
-          students: sortedByChange.map(student => ({
-            student_id: student.student_id,
-            trend: student.trend,
-            data: student.ir_details.map(ir => ({
-              ir: ir.ir,
-              score: parseFloat(ir.overall_avg)
-            }))
-          }))
-        };
-      } else if (lowerMessage.includes('performance') || lowerMessage.includes('current') || lowerMessage.includes('latest')) {
-        const topPerformers = dataService.getTopPerformers(15);
-        
-        chartData = {
-          type: 'bar',
-          title: 'Current Student Performance (Latest IR)',
-          students: topPerformers.map(student => ({
-            student_id: student.student_id,
-            score: parseFloat(student.average_score),
-            grades: student.grades
-          }))
-        };
-      } else if (lowerMessage.includes('grade') || lowerMessage.includes('assessment')) {
-        const allStudents = dataService.getTopPerformers(15);
-        
-        // Count grade distribution
-        const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
-        allStudents.forEach(student => {
-          student.grades.forEach((grade) => {
-            if (gradeCount[grade] !== undefined) {
-              gradeCount[grade]++;
-            }
-          });
-        });
-        
-        chartData = {
-          type: 'pie',
-          title: 'Grade Distribution (All Classes, Latest IR)',
-          data: Object.entries(gradeCount).map(([grade, count]) => ({
-            grade,
-            count
-          }))
-        };
-      }
-    }
+                       if (wantsChart && isDataQuery(message)) {
+                        console.log('Chart requested - preparing chart data...');
+                      
+                        // Determine how many students to show
+                        let studentsToShow = 5;
+                        if (lowerMessage.includes('all') || lowerMessage.includes('everyone')) {
+                          studentsToShow = 15;
+                        }
+                      
+                        // CHECK GRADES FIRST - before progress/trend
+                        if (lowerMessage.includes('grade') || lowerMessage.includes('ka') || lowerMessage.includes('assessment') || lowerMessage.includes('key assessment')) {
+                          console.log('Grade chart requested...');
+                          
+                          const studentReports = dataService.getAllStudentData();
+                          
+                          // Group by student and IR
+                          const gradesByStudent = {};
+                          studentReports.forEach(entry => {
+                            if (!gradesByStudent[entry.student_id]) {
+                              gradesByStudent[entry.student_id] = {};
+                            }
+                            if (!gradesByStudent[entry.student_id][entry.IR]) {
+                              gradesByStudent[entry.student_id][entry.IR] = [];
+                            }
+                            gradesByStudent[entry.student_id][entry.IR].push(entry.KA);
+                          });
+                      
+                          // Convert grades to numbers for charting
+                          const gradeToNumber = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1 };
+                          const numberToGrade = { 5: 'A', 4: 'B', 3: 'C', 2: 'D', 1: 'E' };
+                      
+                          const studentGradeData = Object.keys(gradesByStudent)
+                            .slice(0, studentsToShow)
+                            .map(studentId => {
+                              const irData = [];
+                              for (let ir = 1; ir <= 5; ir++) {
+                                const grades = gradesByStudent[studentId][ir] || [];
+                                const numericGrades = grades.map(g => gradeToNumber[g]);
+                                const avgNumeric = numericGrades.reduce((a, b) => a + b, 0) / numericGrades.length;
+                                irData.push({
+                                  ir: ir,
+                                  grade_numeric: Math.round(avgNumeric),
+                                  grade_letter: numberToGrade[Math.round(avgNumeric)],
+                                  all_grades: grades
+                                });
+                              }
+                              return {
+                                student_id: parseInt(studentId),
+                                data: irData
+                              };
+                            });
+                      
+                          chartData = {
+                            type: 'line_grades',
+                            title: `Student KA Grade Progress (A-E)`,
+                            students: studentGradeData
+                          };
+                      
+                        } else if (lowerMessage.includes('performance') || lowerMessage.includes('current') || lowerMessage.includes('latest')) {
+                          console.log('Performance bar chart requested...');
+                          
+                          const topPerformers = dataService.getTopPerformers(15);
+                          
+                          chartData = {
+                            type: 'bar',
+                            title: 'Current Student Performance (Latest IR)',
+                            students: topPerformers.map(student => ({
+                              student_id: student.student_id,
+                              score: parseFloat(student.average_score),
+                              grades: student.grades
+                            }))
+                          };
+                      
+                        } else if (lowerMessage.includes('distribution')) {
+                          console.log('Grade distribution pie chart requested...');
+                          
+                          const allStudents = dataService.getTopPerformers(15);
+                          const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+                          
+                          allStudents.forEach(student => {
+                            student.grades.forEach((grade) => {
+                              if (gradeCount[grade] !== undefined) {
+                                gradeCount[grade]++;
+                              }
+                            });
+                          });
+                      
+                          chartData = {
+                            type: 'pie',
+                            title: 'Grade Distribution (All Classes, Latest IR)',
+                            data: Object.entries(gradeCount).map(([grade, count]) => ({
+                              grade,
+                              count
+                            }))
+                          };
+                      
+                        } else if (lowerMessage.includes('progress') || lowerMessage.includes('trend') || lowerMessage.includes('improving')) {
+                          console.log('Progress line chart requested...');
+                          
+                          const trends = dataService.getImprovementTrends();
+                          
+                          const sortedByChange = trends
+                            .map(t => ({
+                              ...t,
+                              absChange: Math.abs(parseFloat(t.change_amount))
+                            }))
+                            .sort((a, b) => b.absChange - a.absChange)
+                            .slice(0, studentsToShow);
+                      
+                          chartData = {
+                            type: 'line',
+                            title: `Student Progress Over Time (Top ${studentsToShow})`,
+                            students: sortedByChange.map(student => ({
+                              student_id: student.student_id,
+                              trend: student.trend,
+                              data: student.ir_details.map(ir => ({
+                                ir: ir.ir,
+                                score: parseFloat(ir.overall_avg)
+                              }))
+                            }))
+                          };
+                        }
+                      }
 
     console.log('Calling Anthropic API...');
     

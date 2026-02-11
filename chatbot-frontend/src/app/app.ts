@@ -1,5 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { ChatComponent } from './components/chat/chat';
 import { StudentChartsComponent } from './components/student-charts/student-charts';
 import { CommonModule } from '@angular/common';
@@ -7,7 +6,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ChatComponent, StudentChartsComponent, CommonModule],
+  imports: [ChatComponent, StudentChartsComponent, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

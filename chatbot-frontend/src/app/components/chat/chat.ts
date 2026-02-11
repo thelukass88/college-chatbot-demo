@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chat } from '../../services/chat.service';
-import { ChatChartComponent } from '../chat-chart';
+import { ChatChart } from '../chat-chart/chat-chart';
 interface Message {
   text: string;
   isUser: boolean;
@@ -13,7 +13,7 @@ interface Message {
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, ChatChartComponent],
+  imports: [CommonModule, FormsModule, ChatChart],
   templateUrl: './chat.html',
   styleUrl: './chat.css'
 })
