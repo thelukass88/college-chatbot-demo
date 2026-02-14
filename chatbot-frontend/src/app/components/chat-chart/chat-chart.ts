@@ -30,6 +30,19 @@ export class ChatChart implements AfterViewInit, OnDestroy {
     }
   }
 
+  downloadChart() {
+    if (!this.chart) return;
+
+    const canvas = this.chartCanvas.nativeElement;
+    const url = canvas.toDataURL('image/png');
+    
+    // Create download link
+    const link = document.createElement('a');
+    link.download = `${this.chartData.title.replace(/\s+/g, '_')}.png`;
+    link.href = url;
+    link.click();
+  }
+
   renderChart() {
     if (!this.chartCanvas) return;
     const ctx = this.chartCanvas.nativeElement.getContext('2d');
@@ -193,7 +206,7 @@ export class ChatChart implements AfterViewInit, OnDestroy {
           backgroundColor: students.map((s: any) =>
             s.score >= 3.5 ? '#48bb78' :
             s.score >= 2.5 ? '#4299e1' :
-            '#ed8936'
+            '#ed8836'
           )
         }]
       },
