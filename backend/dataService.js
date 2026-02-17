@@ -10,6 +10,10 @@ const studentReports = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'data/student_interim_reports.json'), 'utf8')
 );
 
+const attendance = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'data/attendance.json'), 'utf8')
+);
+
 class DataService {
   // Get all student data
   getAllStudentData() {
@@ -176,7 +180,6 @@ class DataService {
     return results.sort((a, b) => b.effort_score - a.effort_score);
   }
 
-  // Check if students are improving
   // Check if students are improving - WITH FULL DETAILS
   getImprovementTrends() {
     const students = [...new Set(studentReports.map(r => r.student_id))];
@@ -252,6 +255,89 @@ class DataService {
   // Get interim report details
   getInterimReports() {
     return interimReports;
+  }
+
+  // Get attendance for a specific student
+  getStudentAttendance(studentId, irId = null) {
+    let data = attendance.filter(a => a.student_id === studentId);
+    
+    if (irId) {
+      data = data.filter(a => a.ir_period === irId);
+    }
+    
+    return data;
+  }
+
+  // Calculate attendance rate for a student
+  getStudentAttendanceRate(studentId, irId = null) {
+    const records = this.getStudentAttendance(studentId, irId);
+    
+    if (records.length === 0) return null;
+    
+    const presentCount = records.filter(r => r.present === 1).length;
+    const rate = (presentCount / records.length * 100).toFixed(1);
+    
+    return {
+      student_id: studentId,
+      total_days: records.length,
+      present_days: presentCount,
+      absent_days: records.length - presentCount,
+      attendance_rate: parseFloat(rate),
+      ir_period: irId
+    };
+  }
+
+  // Get attendance summary for all students
+  getAllStudentAttendanceRates(irId = null) {
+    const students = [...new Set(attendance.map(a => a.student_id))];
+    
+    return students.map(studentId => 
+      this.getStudentAttendanceRate(studentId, irId)
+    ).sort((a, b) => a.attendance_rate - b.attendance_rate);
+  }
+
+  // Correlate attendance with grades
+  getAttendanceGradeCorrelation(studentId) {
+    const studentGrades = this.getImprovementTrends()
+      .find(t => t.student_id === studentId);
+    
+    if (!studentGrades) return null;
+    
+    const correlation = [];
+    
+    for (let ir = 1; ir <= 5; ir++) {
+      const attendanceData = this.getStudentAttendanceRate(studentId, ir);
+      const gradeData = studentGrades.ir_details.find(ird => ird.ir === ir);
+      
+      if (attendanceData && gradeData) {
+        correlation.push({
+          ir: ir,
+          attendance_rate: attendanceData.attendance_rate,
+          grade_average: parseFloat(gradeData.overall_avg),
+          independence: parseFloat(gradeData.independence_avg),
+          deadlines: parseFloat(gradeData.deadlines_avg),
+          grades: gradeData.grades
+        });
+      }
+    }
+    
+    return {
+      student_id: studentId,
+      correlation_data: correlation
+    };
+  }
+
+  // Find students with attendance concerns
+  getAttendanceConcerns(threshold = 85) {
+    const latestIR = 5;
+    const rates = this.getAllStudentAttendanceRates(latestIR);
+    
+    return rates
+      .filter(r => r.attendance_rate < threshold)
+      .map(r => ({
+        ...r,
+        concern_level: r.attendance_rate < 75 ? 'High' : 'Moderate'
+      }));
   }
 }
 
