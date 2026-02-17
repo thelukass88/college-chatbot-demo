@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "class_code": "L-HIS-2C",
+    "subject_code": "HIS",
+    "subject_name": "History",
+    "teacher_id": "T004",
+    "teacher_name": "Ms. Chen",
+    "level": "Lower",
+    "class_identifier": "2C",
+    "year_group": "Year 12"
+  },
+  {
+    "id": 2,
+    "class_code": "L-PHY-3A",
+    "subject_code": "PHY",
+    "subject_name": "Physics",
+    "teacher_id": "T006",
+    "teacher_name": "Dr. Patel",
+    "level": "Lower",
+    "class_identifier": "3A",
+    "year_group": "Year 12"
+  },
+  {
+    "id": 3,
+    "class_code": "L-GEO-2A",
+    "subject_code": "GEO",
+    "subject_name": "Geography",
+    "teacher_id": "T008",
+    "teacher_name": "Mr. Davis",
+    "level": "Lower",
+    "class_identifier": "2A",
+    "year_group": "Year 12"
+  },
+  {
+    "id": 4,
+    "class_code": "U-CHE-5B",
+    "subject_code": "CHE",
+    "subject_name": "Chemistry",
+    "teacher_id": "T005",
+    "teacher_name": "Mr. Williams",
+    "level": "Upper",
+    "class_identifier": "5B",
+    "year_group": "Year 13"
+  },
+  {
+    "id": 5,
+    "class_code": "U-BIO-4A",
+    "subject_code": "BIO",
+    "subject_name": "Biology",
+    "teacher_id": "T003",
+    "teacher_name": "Dr. Martinez",
+    "level": "Upper",
+    "class_identifier": "4A",
+    "year_group": "Year 13"
+  },
+  {
+    "id": 6,
+    "class_code": "U-ENG-3B",
+    "subject_code": "ENG",
+    "subject_name": "English Literature",
+    "teacher_id": "T002",
+    "teacher_name": "Mr. Thompson",
+    "level": "Upper",
+    "class_identifier": "3B",
+    "year_group": "Year 13"
+  },
+  {
+    "id": 7,
+    "class_code": "U-PSY-4B",
+    "subject_code": "PSY",
+    "subject_name": "Psychology",
+    "teacher_id": "T007",
+    "teacher_name": "Ms. Brown",
+    "level": "Upper",
+    "class_identifier": "4B",
+    "year_group": "Year 13"
+  },
+  {
+    "id": 8,
+    "class_code": "U-MAT-5A",
+    "subject_code": "MAT",
+    "subject_name": "Mathematics",
+    "teacher_id": "T001",
+    "teacher_name": "Ms. Johnson",
+    "level": "Upper",
+    "class_identifier": "5A",
+    "year_group": "Year 13"
+  },
+  {
+    "id": 9,
+    "class_code": "U-ART-3C",
+    "subject_code": "ART",
+    "subject_name": "Art & Design",
+    "teacher_id": "T009",
+    "teacher_name": "Ms. Wilson",
+    "level": "Upper",
+    "class_identifier": "3C",
+    "year_group": "Year 13"
+  }
+]

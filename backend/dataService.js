@@ -14,6 +14,10 @@ const attendance = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'data/attendance.json'), 'utf8')
 );
 
+const subjectTeacherMap = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'data/subject_teacher_map.json'), 'utf8')
+);
+
 class DataService {
   // Get all student data
   getAllStudentData() {
@@ -338,6 +342,138 @@ class DataService {
         ...r,
         concern_level: r.attendance_rate < 75 ? 'High' : 'Moderate'
       }));
+  }
+
+  // Get subject/teacher information for a class code
+  getClassInfo(classCode) {
+    return subjectTeacherMap.find(m => m.class_code === classCode);
+  }
+
+  // Get all classes taught by a specific teacher
+  getTeacherClasses(teacherId) {
+    return subjectTeacherMap.filter(m => m.teacher_id === teacherId);
+  }
+
+  // Get performance data by subject
+  getSubjectPerformance(subjectCode, irId = null) {
+    // Get all class codes for this subject
+    const subjectClasses = subjectTeacherMap
+      .filter(m => m.subject_code === subjectCode)
+      .map(m => m.class_code);
+    
+    // Get student data for these classes
+    let data = studentReports.filter(r => subjectClasses.includes(r.class_code));
+    
+    if (irId) {
+      data = data.filter(r => r.IR === irId);
+    }
+    
+    if (data.length === 0) return null;
+    
+    // Calculate averages
+    const avgI = (data.reduce((sum, r) => sum + r.I, 0) / data.length).toFixed(2);
+    const avgD = (data.reduce((sum, r) => sum + r.D, 0) / data.length).toFixed(2);
+    const avgCE = (data.reduce((sum, r) => sum + r.CE, 0) / data.length).toFixed(2);
+    const avgEffort = ((parseFloat(avgI) + parseFloat(avgD) + parseFloat(avgCE)) / 3).toFixed(2);
+    
+    // Grade distribution
+    const grades = data.map(r => r.KA);
+    const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+    grades.forEach(g => {
+      if (gradeCount[g] !== undefined) gradeCount[g]++;
+    });
+    
+    return {
+      subject_code: subjectCode,
+      subject_name: subjectTeacherMap.find(m => m.subject_code === subjectCode)?.subject_name,
+      ir_period: irId,
+      student_count: [...new Set(data.map(r => r.student_id))].length,
+      entry_count: data.length,
+      avg_independence: parseFloat(avgI),
+      avg_deadlines: parseFloat(avgD),
+      avg_class_ethic: parseFloat(avgCE),
+      avg_effort_score: parseFloat(avgEffort),
+      grade_distribution: gradeCount
+    };
+  }
+
+  // Get performance data by teacher
+  getTeacherPerformance(teacherId, irId = null) {
+    const teacherClasses = this.getTeacherClasses(teacherId);
+    const classCodes = teacherClasses.map(c => c.class_code);
+    
+    let data = studentReports.filter(r => classCodes.includes(r.class_code));
+    
+    if (irId) {
+      data = data.filter(r => r.IR === irId);
+    }
+    
+    if (data.length === 0) return null;
+    
+    const avgI = (data.reduce((sum, r) => sum + r.I, 0) / data.length).toFixed(2);
+    const avgD = (data.reduce((sum, r) => sum + r.D, 0) / data.length).toFixed(2);
+    const avgCE = (data.reduce((sum, r) => sum + r.CE, 0) / data.length).toFixed(2);
+    const avgEffort = ((parseFloat(avgI) + parseFloat(avgD) + parseFloat(avgCE)) / 3).toFixed(2);
+    
+    const grades = data.map(r => r.KA);
+    const gradeCount = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+    grades.forEach(g => {
+      if (gradeCount[g] !== undefined) gradeCount[g]++;
+    });
+    
+    const teacherInfo = teacherClasses[0];
+    
+    return {
+      teacher_id: teacherId,
+      teacher_name: teacherInfo?.teacher_name,
+      subject: teacherInfo?.subject_name,
+      classes: classCodes,
+      ir_period: irId,
+      student_count: [...new Set(data.map(r => r.student_id))].length,
+      entry_count: data.length,
+      avg_independence: parseFloat(avgI),
+      avg_deadlines: parseFloat(avgD),
+      avg_class_ethic: parseFloat(avgCE),
+      avg_effort_score: parseFloat(avgEffort),
+      grade_distribution: gradeCount
+    };
+  }
+
+  // Compare performance across all subjects
+  compareSubjects(irId = 5) {
+    const subjects = [...new Set(subjectTeacherMap.map(m => m.subject_code))];
+    
+    return subjects.map(subjectCode => {
+      return this.getSubjectPerformance(subjectCode, irId);
+    }).filter(s => s !== null)
+      .sort((a, b) => b.avg_effort_score - a.avg_effort_score);
+  }
+
+  // Compare performance across all teachers
+  compareTeachers(irId = 5) {
+    const teachers = [...new Set(subjectTeacherMap.map(m => m.teacher_id))];
+    
+    return teachers.map(teacherId => {
+      return this.getTeacherPerformance(teacherId, irId);
+    }).filter(t => t !== null)
+      .sort((a, b) => b.avg_effort_score - a.avg_effort_score);
+  }
+
+  // Get all subjects
+  getAllSubjects() {
+    return [...new Set(subjectTeacherMap.map(m => ({
+      subject_code: m.subject_code,
+      subject_name: m.subject_name
+    })))];
+  }
+
+  // Get all teachers
+  getAllTeachers() {
+    return [...new Set(subjectTeacherMap.map(m => ({
+      teacher_id: m.teacher_id,
+      teacher_name: m.teacher_name,
+      subject: m.subject_name
+    })))];
   }
 }
 

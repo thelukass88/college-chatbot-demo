@@ -223,6 +223,24 @@ The chart appears automatically. You just provide human-readable insights.
     context += `Struggling students with their KA grades:\n${JSON.stringify(struggling, null, 2)}\n`;
   }
 
+  // Check for subject-specific queries
+  if (lowerMessage.includes('subject') || lowerMessage.includes('maths') || lowerMessage.includes('english') || 
+      lowerMessage.includes('science') || lowerMessage.includes('compare subject')) {
+    const subjectComparison = dataService.compareSubjects(5);
+    
+    context += `\n**SUBJECT PERFORMANCE COMPARISON (Latest IR):**\n`;
+    context += `${JSON.stringify(subjectComparison, null, 2)}\n`;
+  }
+
+  // Check for teacher-specific queries
+  if (lowerMessage.includes('teacher') || lowerMessage.includes('compare teacher') || 
+      lowerMessage.includes('which teacher')) {
+    const teacherComparison = dataService.compareTeachers(5);
+    
+    context += `\n**TEACHER PERFORMANCE COMPARISON (Latest IR):**\n`;
+    context += `${JSON.stringify(teacherComparison, null, 2)}\n`;
+  }
+  
   context += `\nRemember: 
 - Be concise, specific, and actionable
 - You HAVE access to KA grades in the 'grades' field of the data
