@@ -18,6 +18,10 @@ const subjectTeacherMap = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'data/subject_teacher_map.json'), 'utf8')
 );
 
+const pastoralNotes = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'data/pastoral_notes.json'), 'utf8')
+);
+
 class DataService {
   // Get all student data
   getAllStudentData() {
@@ -474,6 +478,107 @@ class DataService {
       teacher_name: m.teacher_name,
       subject: m.subject_name
     })))];
+  }
+
+  // Get pastoral notes for a student
+  getStudentPastoralNotes(studentId, irId = null) {
+    let notes = pastoralNotes.filter(n => n.student_id === studentId);
+    
+    if (irId) {
+      notes = notes.filter(n => n.ir_period === irId);
+    }
+    
+    return notes.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  // Get all unresolved pastoral concerns
+  getUnresolvedConcerns() {
+    return pastoralNotes
+      .filter(n => n.resolved === 0)
+      .sort((a, b) => {
+        // Sort by severity then date
+        const severityOrder = { 'High': 3, 'Moderate': 2, 'Low': 1 };
+        const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
+        if (severityDiff !== 0) return severityDiff;
+        return new Date(b.date) - new Date(a.date);
+      });
+  }
+
+  // Get pastoral notes by category
+  getPastoralByCategory(category, irId = null) {
+    let notes = pastoralNotes.filter(n => n.category === category);
+    
+    if (irId) {
+      notes = notes.filter(n => n.ir_period === irId);
+    }
+    
+    return notes;
+  }
+
+  // Correlate pastoral interventions with grade improvements
+  getPastoralImpact(studentId) {
+    const notes = this.getStudentPastoralNotes(studentId);
+    const trends = this.getImprovementTrends().find(t => t.student_id === studentId);
+    
+    if (!notes.length || !trends) return null;
+    
+    // For each pastoral note, check if grades improved in subsequent IRs
+    const impacts = notes.map(note => {
+      const noteIR = note.ir_period;
+      const beforeGrade = trends.ir_details.find(ir => ir.ir === noteIR);
+      const afterGrade = trends.ir_details.find(ir => ir.ir === noteIR + 1);
+      
+      let impact = 'Unknown';
+      if (beforeGrade && afterGrade) {
+        const before = parseFloat(beforeGrade.overall_avg);
+        const after = parseFloat(afterGrade.overall_avg);
+        const change = after - before;
+        
+        if (change > 0.3) impact = 'Positive';
+        else if (change < -0.3) impact = 'Negative';
+        else impact = 'Neutral';
+      }
+      
+      return {
+        ...note,
+        impact_on_next_ir: impact,
+        grade_before: beforeGrade?.overall_avg,
+        grade_after: afterGrade?.overall_avg
+      };
+    });
+    
+    return {
+      student_id: studentId,
+      interventions: impacts
+    };
+  }
+
+  // Get students with multiple pastoral concerns
+  getHighPastoralNeedStudents(threshold = 2) {
+    const studentCounts = {};
+    
+    pastoralNotes.forEach(note => {
+      if (!studentCounts[note.student_id]) {
+        studentCounts[note.student_id] = {
+          student_id: note.student_id,
+          total_notes: 0,
+          unresolved: 0,
+          high_severity: 0,
+          categories: []
+        };
+      }
+      
+      studentCounts[note.student_id].total_notes++;
+      if (note.resolved === 0) studentCounts[note.student_id].unresolved++;
+      if (note.severity === 'High') studentCounts[note.student_id].high_severity++;
+      if (!studentCounts[note.student_id].categories.includes(note.category)) {
+        studentCounts[note.student_id].categories.push(note.category);
+      }
+    });
+    
+    return Object.values(studentCounts)
+      .filter(s => s.total_notes >= threshold || s.unresolved > 0 || s.high_severity > 0)
+      .sort((a, b) => b.high_severity - a.high_severity || b.unresolved - a.unresolved);
   }
 }
 

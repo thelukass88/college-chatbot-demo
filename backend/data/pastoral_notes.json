@@ -1,0 +1,233 @@
+[
+  {
+    "note_id": 20,
+    "student_id": 1014,
+    "date": "2024-10-16",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Good progress this term.",
+    "resolved": 1,
+    "ir_period": 2,
+    "staff_member": "Staff 2"
+  },
+  {
+    "note_id": 4,
+    "student_id": 1003,
+    "date": "2024-10-19",
+    "category": "Behavioural Issue",
+    "severity": "Low",
+    "notes": "Late to lessons. Spoken to student.",
+    "resolved": 1,
+    "ir_period": 2,
+    "staff_member": "Staff 2"
+  },
+  {
+    "note_id": 13,
+    "student_id": 1007,
+    "date": "2024-10-24",
+    "category": "Behavioural Issue",
+    "severity": "Moderate",
+    "notes": "Disruption in class. Parents contacted.",
+    "resolved": 1,
+    "ir_period": 2,
+    "staff_member": "Staff 1"
+  },
+  {
+    "note_id": 18,
+    "student_id": 1013,
+    "date": "2024-11-10",
+    "category": "Academic Support",
+    "severity": "High",
+    "notes": "Requires additional support in core subjects.",
+    "resolved": 1,
+    "ir_period": 2,
+    "staff_member": "Staff 3"
+  },
+  {
+    "note_id": 8,
+    "student_id": 1005,
+    "date": "2024-11-12",
+    "category": "Attendance Concern",
+    "severity": "High",
+    "notes": "Frequent absences. Called home - family aware.",
+    "resolved": 0,
+    "ir_period": 2,
+    "staff_member": "Staff 3"
+  },
+  {
+    "note_id": 16,
+    "student_id": 1012,
+    "date": "2025-01-06",
+    "category": "Course Change Request",
+    "severity": "Low",
+    "notes": "Considering switch from Physics to Psychology.",
+    "resolved": 1,
+    "ir_period": 3,
+    "staff_member": "Staff 1"
+  },
+  {
+    "note_id": 21,
+    "student_id": 1015,
+    "date": "2025-01-06",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Good progress this term.",
+    "resolved": 1,
+    "ir_period": 3,
+    "staff_member": "Staff 3"
+  },
+  {
+    "note_id": 9,
+    "student_id": 1005,
+    "date": "2025-01-12",
+    "category": "Academic Support",
+    "severity": "High",
+    "notes": "Struggling in all subjects. Referred to learning support.",
+    "resolved": 0,
+    "ir_period": 3,
+    "staff_member": "Staff 4"
+  },
+  {
+    "note_id": 14,
+    "student_id": 1007,
+    "date": "2025-01-15",
+    "category": "Attendance Concern",
+    "severity": "Low",
+    "notes": "Medical appointments affecting attendance.",
+    "resolved": 1,
+    "ir_period": 3,
+    "staff_member": "Staff 4"
+  },
+  {
+    "note_id": 11,
+    "student_id": 1006,
+    "date": "2025-01-21",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Consistent excellent attendance and effort.",
+    "resolved": 1,
+    "ir_period": 3,
+    "staff_member": "Staff 4"
+  },
+  {
+    "note_id": 5,
+    "student_id": 1003,
+    "date": "2025-01-25",
+    "category": "Peer Conflict",
+    "severity": "Moderate",
+    "notes": "Issues with group work. Mediation successful.",
+    "resolved": 1,
+    "ir_period": 3,
+    "staff_member": "Staff 3"
+  },
+  {
+    "note_id": 19,
+    "student_id": 1013,
+    "date": "2025-01-31",
+    "category": "Mental Health",
+    "severity": "Moderate",
+    "notes": "Self-referred to wellbeing team. Ongoing support.",
+    "resolved": 0,
+    "ir_period": 3,
+    "staff_member": "Staff 2"
+  },
+  {
+    "note_id": 2,
+    "student_id": 1002,
+    "date": "2025-02-27",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Significant improvement in effort and grades. Well done!",
+    "resolved": 1,
+    "ir_period": 4,
+    "staff_member": "Staff 1"
+  },
+  {
+    "note_id": 6,
+    "student_id": 1003,
+    "date": "2025-02-28",
+    "category": "Attendance Concern",
+    "severity": "Moderate",
+    "notes": "Friday attendance pattern emerging.",
+    "resolved": 0,
+    "ir_period": 4,
+    "staff_member": "Staff 5"
+  },
+  {
+    "note_id": 10,
+    "student_id": 1005,
+    "date": "2025-03-05",
+    "category": "Family Issues",
+    "severity": "Moderate",
+    "notes": "Parent meeting - family circumstances affecting attendance.",
+    "resolved": 0,
+    "ir_period": 4,
+    "staff_member": "Staff 1"
+  },
+  {
+    "note_id": 17,
+    "student_id": 1012,
+    "date": "2025-03-05",
+    "category": "Academic Support",
+    "severity": "Moderate",
+    "notes": "Transition support for course change.",
+    "resolved": 1,
+    "ir_period": 4,
+    "staff_member": "Staff 1"
+  },
+  {
+    "note_id": 15,
+    "student_id": 1009,
+    "date": "2025-03-12",
+    "category": "Family Issues",
+    "severity": "Moderate",
+    "notes": "Family relocation causing stress.",
+    "resolved": 0,
+    "ir_period": 4,
+    "staff_member": "Staff 2"
+  },
+  {
+    "note_id": 7,
+    "student_id": 1004,
+    "date": "2025-03-23",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Leadership qualities. Nominated for Head Student.",
+    "resolved": 1,
+    "ir_period": 4,
+    "staff_member": "Staff 5"
+  },
+  {
+    "note_id": 1,
+    "student_id": 1001,
+    "date": "2025-04-30",
+    "category": "Positive Recognition",
+    "severity": "Low",
+    "notes": "Consistent high performance. Potential Oxbridge candidate.",
+    "resolved": 1,
+    "ir_period": 5,
+    "staff_member": "Staff 4"
+  },
+  {
+    "note_id": 3,
+    "student_id": 1002,
+    "date": "2025-05-01",
+    "category": "Academic Support",
+    "severity": "Low",
+    "notes": "Mentoring program successful - grades improving.",
+    "resolved": 1,
+    "ir_period": 5,
+    "staff_member": "Staff 4"
+  },
+  {
+    "note_id": 12,
+    "student_id": 1006,
+    "date": "2025-05-16",
+    "category": "Academic Support",
+    "severity": "Low",
+    "notes": "Extra tutoring paying off. Excellent progress.",
+    "resolved": 1,
+    "ir_period": 5,
+    "staff_member": "Staff 2"
+  }
+]

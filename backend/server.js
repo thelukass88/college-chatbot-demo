@@ -240,7 +240,32 @@ The chart appears automatically. You just provide human-readable insights.
     context += `\n**TEACHER PERFORMANCE COMPARISON (Latest IR):**\n`;
     context += `${JSON.stringify(teacherComparison, null, 2)}\n`;
   }
-  
+
+  // Check for pastoral queries
+  if (lowerMessage.includes('pastoral') || lowerMessage.includes('concern') || 
+      lowerMessage.includes('wellbeing') || lowerMessage.includes('support')) {
+    const unresolvedConcerns = dataService.getUnresolvedConcerns();
+    const highNeedStudents = dataService.getHighPastoralNeedStudents();
+    
+    context += `\n**PASTORAL DATA:**\n`;
+    context += `Unresolved concerns:\n${JSON.stringify(unresolvedConcerns, null, 2)}\n\n`;
+    context += `Students with high pastoral needs:\n${JSON.stringify(highNeedStudents, null, 2)}\n`;
+  }
+
+  // Check for intervention impact queries
+  if ((lowerMessage.includes('intervention') || lowerMessage.includes('pastoral')) && 
+      (lowerMessage.includes('impact') || lowerMessage.includes('effective') || lowerMessage.includes('work'))) {
+    
+    // Get impact analysis for students with pastoral notes
+    const highNeedStudents = dataService.getHighPastoralNeedStudents();
+    const impacts = highNeedStudents.slice(0, 5).map(s => 
+      dataService.getPastoralImpact(s.student_id)
+    ).filter(i => i !== null);
+    
+    context += `\n**PASTORAL INTERVENTION IMPACT:**\n`;
+    context += `${JSON.stringify(impacts, null, 2)}\n`;
+  }
+
   context += `\nRemember: 
 - Be concise, specific, and actionable
 - You HAVE access to KA grades in the 'grades' field of the data
